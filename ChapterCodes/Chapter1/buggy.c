@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+
 /* WARNING: This is buggy code */
 float sum_elements(float a[], unsigned length){
     int i;
