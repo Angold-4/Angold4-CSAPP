@@ -22,12 +22,15 @@ int main(){
 }
 
 /*
+ 
 ➜  Chapter1 (master) ✗ gcc div16.c -o div16
 ➜  Chapter1 (master) ✗ ./div16
 -7
+
 */
 
 /*
+ 
 Preference: https://www.programiz.com/c-programming/bitwise-operators
 12 = 00001100 (In Binary)
 25 = 00011001 (In Binary)
@@ -37,5 +40,6 @@ Bit Operation of 12 and 25
 & 00011001
   ________
   00001000  = 8 (In decimal)
+
 */
 
