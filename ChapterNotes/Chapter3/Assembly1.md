@@ -17,7 +17,7 @@ int main(){
 * **gcc -S:**<br>
 ```✗ gcc -Og -S test.c```<br>**Then gcc will generate a file called test.s:(-Og means Optimization)**<br>
 
-```x86asm
+```assembly
 ## test.s
 	.section	__TEXT,__text,regular,pure_instructions
 	.build_version macos, 10, 14	sdk_version 10, 14
@@ -70,7 +70,7 @@ _main:
 ### Access Information
 
 **An x86-64 CPU contains a set of 16 general-purpose registers that store 64-bit values<br>**
-```x86asm
+```assembly
 ## This is a list for these 16 general-purpose reigsters:
 
 64    32     16     8
@@ -134,7 +134,7 @@ e.g: (%rax,%rcx,4) --> the Value in Storage the Value in Regster %rax + 4*the Va
 
 ##### mov
 
-```x86asm
+```assembly
 movl $0x4050,%eax        Immediate-->Register  4bytes
 movw %bp,%sp             Register-->Register   2bytes
 movb (%rdi,%rcx),%al     Memory-->Register     1byte
@@ -144,18 +144,19 @@ movq %rax,-12(%rbp)      Register-->Memory     8bytes
 ```
 ##### movz
 **Move from smaller storage units to larger storage units<br>Fill the remaining byte(s) in the destination with 0**
-```x86asm
+```assembly
 movzbw $0xF0,%ax     In ax register: 0x00F0
 ```
 
 ##### movs
 **Move from smaller storage units to larger storage units<br>Fill the remaining byte(s) in the destination with Sign bit(Just as mov)**
-```x86asm
+```assembly
 movsbw $0xF0,%ax     In ax register: 0xFFF0
 ```
 
 ##### More Examples:
-```x86asm
+
+```assembly
 movabsq $0x0011223344556677, %rax    ## %rax = 0011223344556677
 movb    $-1, %al                     ## %rax = 00112233445566FF
 movw    $-1, %ax                     ## %rax = 001122334455FFFF
@@ -163,7 +164,7 @@ movl    $-1, %eax                    ## %rax = 00000000FFFFFFFF
 movq    $-1, %rax                    ## %rax = FFFFFFFFFFFFFFFF
 ```
 
-```x86asm
+```assembly
 movabsq $0x0011223344556677, %rax    ## %rax = 0011223344556677
 movb    $0xAA, %dl                   ## %dl = AA
 movb    %dl, %al                     ## %rax = 00112233445566AA
@@ -171,4 +172,71 @@ movsbq  %dl, %rax                    ## %rax = FFFFFFFFFFFFFFAA
 movzbq  %dl, %rax                    ## %rax = 00000000000000AA
 ```
 
+##### Practice:
+```c
+src_t  *sp;
+dest_t *dp;
+/*
+Assume that src_t and dest_t were typedef (Some Types of numbers)
+Here We need to Use suitable Assembly language to Achieve:
+(Supposed that the value of sp and dp are stored in %rdi and %rsi)
+*/
+*dp = (dest_t) *sp
+```
 
+```assembly
+src_t          dest_t          Command               Note
+long           long            movq(%rdi),%rax       NaN
+                               movq %rax,(%rsi)
+
+char           int             movsbl(%rdi),%eax     ## If We don't move a Unsigned number.
+                               movl %eax, (%rsi)     ## We need to use 'movs'
+
+char           unsigned        movsbl(%rdi),%eax     ## That is because In C programming Language
+                               movl %eax, (%rsi)     ## If Cast type Change both the sign and the size
+                                                     ## C Usually Change the Size first
+
+unsigned char  long            movzbl(%rdi),%eax     ## If We need to move a Unsigned number.
+                               movl %eax, (%rsi)     ## We need to use 'movz'
+
+int            char            movl (%rdi),%eax      ## If We move a number from Large Size to Small Size
+                               movb %al, (%rsi)      ## Move all to the register first, than move the least significant byte of the Small Size
+
+unsigned       unsigned char   movl (%rdi),%eax      NaN
+                               movb %al, (%rsi)
+
+char           short           movzbw (%rdi),%ax     NaN
+                               movw %ax, (%rsi)
+```
+
+#### Assembly with C Pointer
+**Let's see this C Function exchange**
+
+```c
+// long.c
+1 long exchange(long *xp, long y)
+2 {
+3     long x = *xp;
+4     *xp = y;
+5     return x;
+6 }
+
+```
+**When We Compile it... ```gcc -Og -S long.c```**
+
+```assembly
+## long.s
+_exchange:                             
+
+1   pushq	%rbp
+2   movq	%rsp, %rbp
+
+3   movq	(%rdi), %rax
+4   movq	%rsi, (%rdi)
+
+5   popq	%rbp
+6   retq
+
+```
+* **We Can See that in Assembly (long.s): Line3 and Line4 are correspond to Line3 and Line4 in long.c**
+* **a pointer ```*xp``` in Assembly language is correspond to a register with ```()```Opreation**
