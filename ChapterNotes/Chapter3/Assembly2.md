@@ -147,3 +147,112 @@ Line 8:  t4 = t2 - t3
 We can notice that the Compiler divide the Opration "z * 48" into two steps:
 1)z = z >> 4 --> 2)z * 3
 ```
+
+#### Special Oprations
+**In x86-64. We can caculate two 64-bits numbers.<br>But as we know that when two 64-bits numbers do some caculation(mul div)<br>
+We need almost 128-bits to store the answer. But in x86-64. We don't have 128-bits register**
+
+**Let's see How x86-64 assembly achieve it:**
+```c
+// uint.c
+typedef unsigned __int128 uint128_t;
+
+void store_uprod(uint128_t *dest, unsigned long x, unsigned long y)
+{
+    *dest = x * (uint128_t) y
+}
+
+/*
+*Let me do a brief introduction to this uint.c. 
+*Then we can check the assembly form to see how the compiler to achieve that
+*/
+```
+* **We use the 128-bits type that GCC provided to apply the 128-bits number**
+* **in function store_uprod: We store the value of x ```*``` y(Forcibly convert the result to a 128bit number) in the storage of pointer ```*dest```**
+
+
+```assembly
+## dest in %rdi, x in %rsi, y in %rdx
+_store_uprod:                           ## @store_uprod
+1   pushq	%rbp
+2   movq	%rsp, %rbp
+3   movq	%rdx, %rax
+4   mulq	%rsi
+5   movq	%rdx, 8(%rdi)
+6   movq	%rax, (%rdi)
+7   popq	%rbp
+8   retq
+                                        ## -- End function
+
+```
+* **The way gcc compiler handles 128bit results is that to use two register(%rax and %rdx) to store separately the lower 8 bytes and the upper 8 bytes(In Line 5 and 6)**
+* **Another interesting thing is that the way to caculate two 64bit number:<br>
+In Line 3 we directly move y into %rax register and In Line 4 we have a one-parameter ```mul``` command<br>
+The ```mul``` instruction at this time requires that one of the two 64bit parameters must be in register %rax and another need to be the only parameter of mul**
+
+
+**It is a little bit difference between multiply and div in 64-bit opration. Let's see an example of Div:**
+
+```c
+// div64.c
+void remdiv(long x, long y, long *qp, long *rp)
+{
+    long q = x / y;
+    long r = x % y;
+    *qp = q;
+    *rp = r;
+}
+```
+```assembly
+## div64.s
+## x in %rdi, y in %rsi, qp in %rdx, rp in %rcx
+_remdiv:                                ## @remdiv
+1   pushq	%rbp
+2   movq	%rsp, %rbp                 
+3   movq	%rdx, %r8                   ## Copy qp 
+4   movq	%rdi, %rax                  ## Move x to lower 8 bytes of dividend
+5   cqto                                ## Sign-extend to upper 8 bytes of dividend
+6   idivq	%rsi                        ## divide by y
+7   movq	%rax, (%r8)                 ## Store quotient at qp
+8   movq	%rdx, (%rcx)                ## Store remainder at rp
+9   popq	%rbp
+10  retq
+                                        ## -- End function
+
+```
+* **The signed division instruction idivl takes registers```%rax```(upper 64 bits) and```%rdx```(lower 64 bits) as the dividend, and the divisor is given as the operand of the instruction.**
+* **The instruction stores the quotient in register```%rax``` and the remainder in register```%rdx```**
+
+* **We can see that in line 4 we move the x into register ```%rax```**
+* **In line 5 the ```cqto``` command means that to extand the 64bit sign bit of ```%rax``` to ```%rdx```**
+
+
+**In Unsigned long div: We don't need to use ```cqto```**
+
+```c
+// div64.c
+void remdiv(unsigned long x, unsigned long y, unsigned long *qp, unsigned long *rp)
+{
+    unsigned long q = x / y;
+    unsigned long r = x % y;
+    *qp = q;
+    *rp = r;
+}
+```
+```assembly
+## div64.s
+## x in %rdi, y in %rsi, qp in %rdx, rp in %rcx
+_remdiv:                                ## @remdiv
+1   pushq	%rbp
+2   movq	%rsp, %rbp                 
+3   movq	%rdx, %r8                   ## Copy qp 
+4   movq	%rdi, %rax                  ## Move x to lower 8 bytes of dividend
+5   movl    $0, %rbx                    ## Unsigned division we don't need cqto
+6   divq	%rsi                        ## divide by y
+7   movq	%rax, (%r8)                 ## Store quotient at qp
+8   movq	%rdx, (%rcx)                ## Store remainder at rp
+9   popq	%rbp
+10  retq
+                                        ## -- End function
+
+```
