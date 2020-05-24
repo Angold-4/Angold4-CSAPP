@@ -248,6 +248,7 @@ _remdiv:                                ## @remdiv
 3   movq	%rdx, %r8                   ## Copy qp 
 4   movq	%rdi, %rax                  ## Move x to lower 8 bytes of dividend
 5   movl    $0, %rbx                    ## Unsigned division we don't need cqto
+5   xorq    %rbx, %rbx                  ## Or you can use XOR to save the storage(3 byte)
 6   divq	%rsi                        ## divide by y
 7   movq	%rax, (%r8)                 ## Store quotient at qp
 8   movq	%rdx, (%rcx)                ## Store remainder at rp
