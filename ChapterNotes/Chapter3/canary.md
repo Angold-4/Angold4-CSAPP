@@ -120,7 +120,7 @@ void echo(){
 }
 ```
 **After we compile it:**
-```
+```assembly
 ## echo.s
 _echo:                                  ## @echo
 	.cfi_startproc
