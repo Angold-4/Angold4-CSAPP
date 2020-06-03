@@ -53,7 +53,7 @@ In real life If a malicious programmer make a -buffer-flow program and change th
 It will cause damages
 
 
-**There are many ways to avoid that and Let's check that:**
+**There are many ways to avoid that and Let's check them:**
 
 #### 1. Stack Randomization
 **In order to insert the attack code into the system<br>the attacker has to insert both the code and the pointer to this code and push it onto the stack<br>**
