@@ -1,3 +1,0 @@
-## Assembly3
-
-**Some Notes For CS:APP Chapter3 by Jiawei Wang**
