@@ -6,4 +6,3 @@ long arith(long x, long y, long z)
     long t4 = t2 - t3;
     return t4;
 }
-

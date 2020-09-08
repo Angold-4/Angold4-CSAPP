@@ -15,6 +15,8 @@ int main(){
     char b = '1';
     gets(&b);
     printf("%p \n", &b);
+    printf("%c \n", b);
+    printf("%c \n", *&b);
     return 0;
 }
 
@@ -22,3 +24,5 @@ int main(){
 /*0x7ffeef18282b*/
 /*1*/
 /*0x7ffeef18282b*/
+/*1*/
+/*1*/
