@@ -122,7 +122,7 @@ storage:   value:
 
 1.indexed addressing:
 e.g: (%rax) --> the Value in Storage the Value in Regster %rax --> 0xFF
-e.g: 4(%rax) --> the Value in Storage 4 * the Value in Regster %rax --> 0xAB
+e.g: 4(%rax) --> the Value in Storage 4 + the Value in Regster %rax --> 0xAB
 e.g: 260(%rcx,%rdx) --> the Value in Storage 260 + the Value in Regster %rcx, %rdx --> (0x104+0x1+0x3) = (0x108) = 0x13
 
 2.proportion indexed addressing:
